@@ -5,12 +5,21 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/time.h> 
+#include <unistd.h>
+
 #define DEV_PATH "/dev/input/event1"   //difference is possible
+
+static int isFileExist(const char *path)
+{
+	if(path == NULL) return -1;
+	if(access(path,F_OK) == 0) return 0;	
+	return -1;
+}
 
 static void prtInfo()
 {
 	printf("###########################################################################################\n");
-	printf("Usepage");
+	printf("Usepage\n");
 	printf("0 record script file\n");
 	printf("1 play script file\n");
 	printf("###########################################################################################\n");
@@ -54,6 +63,12 @@ int main(int argc, char*argv[])
 		printf("num:%d\n",num);
 		if(num ==1)
 		{	
+			int exit = isFileExist("/userdata/key_event_record.log");
+			if(exit == -1)
+			{
+				printf("not found script file, please record script file\n");
+				continue;
+			}
 			printf("start play script file\n");
 			fp = fopen("/userdata/key_event_record.log", "r");	
 			struct timeval time;
@@ -66,7 +81,6 @@ int main(int argc, char*argv[])
 				//printf("nread:%d %ld\t%ld\t%d\t%d\t%d\n",nread,sec,usec, t.type,t.code,t.value);
 				if(nread !=5)
 				{
-					lseek(fp, 0, SEEK_SET);
 					usleep(20*1000);
 					fclose(fp);
 					fp = fopen("/userdata/key_event_record.log", "r");
